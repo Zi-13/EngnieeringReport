@@ -15,7 +15,7 @@
 \usepackage{cite}
 \usepackage{float} % 用于强制图片位置
 \usepackage{pgfplots}
-\pgfplotsset{compat=1.17} % 或更新版本
+\pgfplotsset{compat=1.18} % 或更新版本
 
 % —————————— 引入绘图包 TikZ 与优化配置 ——————————
 \usepackage{tikz}
@@ -34,6 +34,8 @@
 
 % 页面设置：1.5倍行距有助于达到页数要求，且符合报告规范
 \geometry{left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm}
+\setlength{\headheight}{15pt}
+\addtolength{\topmargin}{-3pt} % 稍微减少上边距以抵消增加的页眉高度
 \setstretch{1.5}
 \setlength{\parindent}{2em}
 \setlist{nosep}
@@ -352,7 +354,7 @@
     % 颜色：红色系，代表激进、敏捷
     \addplot3[
         surf,
-        shader=interp,
+        shader=flat,
         fill opacity=0.6,
         colormap={cncolors}{color=(red) color=(orange)},
         domain=0:1,
@@ -369,7 +371,7 @@
     % 颜色：蓝色系，代表沉稳、积淀
     \addplot3[
         surf,
-        shader=interp,
+        shader=flat,
         fill opacity=0.5,
         colormap={uscolors}{color=(blue!80) color=(cyan)},
         domain=0:1,
