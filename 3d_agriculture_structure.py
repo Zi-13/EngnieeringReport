@@ -3,12 +3,23 @@ import numpy as np
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 
+# Surface equation coefficients (Z = HARDWARE_COEFF*X + AGRONOMY_COEFF*Y + interaction)
+HARDWARE_COEFF = 0.1  # Hardware has minimal impact on compliance
+AGRONOMY_COEFF = 0.8  # Agronomy has strong impact on compliance
+INTERACTION_COEFF = 0.05  # Small interaction term
+
+# Sigmoid parameters for Y-axis diminishing returns
+SIGMOID_STEEPNESS = 5
+SIGMOID_MIDPOINT = 0.5
+SIGMOID_BASELINE = 0.7
+SIGMOID_AMPLITUDE = 0.3
+
 # Try to set Chinese font, with fallback to English
 try:
     plt.rcParams['font.sans-serif'] = ['SimHei', 'DejaVu Sans']
     plt.rcParams['axes.unicode_minus'] = False
     USE_CHINESE = True
-except:
+except Exception:
     USE_CHINESE = False
 
 def create_3d_agriculture_structure():
@@ -32,14 +43,15 @@ def create_3d_agriculture_structure():
     # --- 2. Define Z Surface Function ---
     # Z increases significantly with Y (agronomy), minimally with X (hardware)
     # Using sigmoid-like function for smooth curvature
-    # Z = 0.1 * X + 0.8 * Y with some nonlinearity
-    Z_mesh = 0.1 * X_mesh + 0.8 * Y_mesh + 0.05 * X_mesh * Y_mesh / 10.0
+    Z_mesh = (HARDWARE_COEFF * X_mesh + 
+              AGRONOMY_COEFF * Y_mesh + 
+              INTERACTION_COEFF * X_mesh * Y_mesh / 10.0)
     
     # Add some curvature using sigmoid on Y axis
     # This emphasizes that Y (agronomy) has diminishing returns at high values
     Y_normalized = Y_mesh / 10.0
-    sigmoid_factor = 1 / (1 + np.exp(-5 * (Y_normalized - 0.5)))
-    Z_mesh = Z_mesh * (0.7 + 0.3 * sigmoid_factor)
+    sigmoid_factor = 1 / (1 + np.exp(-SIGMOID_STEEPNESS * (Y_normalized - SIGMOID_MIDPOINT)))
+    Z_mesh = Z_mesh * (SIGMOID_BASELINE + SIGMOID_AMPLITUDE * sigmoid_factor)
     
     # --- 3. Plot Surface ---
     surf = ax.plot_surface(X_mesh, Y_mesh, Z_mesh, 
@@ -59,17 +71,21 @@ def create_3d_agriculture_structure():
     # --- 4. Define Key Positions ---
     # China's Position: High X (~8-9), Low Y (~2-3), Low Z
     china_x, china_y = 8.5, 2.5
-    china_z = 0.1 * china_x + 0.8 * china_y + 0.05 * china_x * china_y / 10.0
+    china_z = (HARDWARE_COEFF * china_x + 
+               AGRONOMY_COEFF * china_y + 
+               INTERACTION_COEFF * china_x * china_y / 10.0)
     china_y_norm = china_y / 10.0
-    china_sigmoid = 1 / (1 + np.exp(-5 * (china_y_norm - 0.5)))
-    china_z = china_z * (0.7 + 0.3 * china_sigmoid)
+    china_sigmoid = 1 / (1 + np.exp(-SIGMOID_STEEPNESS * (china_y_norm - SIGMOID_MIDPOINT)))
+    china_z = china_z * (SIGMOID_BASELINE + SIGMOID_AMPLITUDE * china_sigmoid)
     
     # Western Giants: High Y (~8-9), High X (~6-7), High Z
     west_x, west_y = 6.5, 8.5
-    west_z = 0.1 * west_x + 0.8 * west_y + 0.05 * west_x * west_y / 10.0
+    west_z = (HARDWARE_COEFF * west_x + 
+              AGRONOMY_COEFF * west_y + 
+              INTERACTION_COEFF * west_x * west_y / 10.0)
     west_y_norm = west_y / 10.0
-    west_sigmoid = 1 / (1 + np.exp(-5 * (west_y_norm - 0.5)))
-    west_z = west_z * (0.7 + 0.3 * west_sigmoid)
+    west_sigmoid = 1 / (1 + np.exp(-SIGMOID_STEEPNESS * (west_y_norm - SIGMOID_MIDPOINT)))
+    west_z = west_z * (SIGMOID_BASELINE + SIGMOID_AMPLITUDE * west_sigmoid)
     
     # --- 5. Add Scatter Points and Projections ---
     # China's position marker (red)
