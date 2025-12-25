@@ -14,6 +14,8 @@
 \usepackage{fancyhdr}
 \usepackage{cite}
 \usepackage{float} % 用于强制图片位置
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17} % 或更新版本
 
 % —————————— 引入绘图包 TikZ 与优化配置 ——————————
 \usepackage{tikz}
@@ -322,80 +324,83 @@
     \item \textbf{挑战：} 欧美国家对农业测绘数据、土壤数据回传至中国服务器持有高度警惕，这导致大疆等企业在部分高端市场遭遇禁令或审查，限制了其云端大数据服务的全球化部署\cite{data_security}。
 \end{itemize}
 
-% —————————— 图3：重点修改的三维曲面图 ——————————
-\begin{figure}[h]
+% —————————— 插入图3：三维曲面竞争态势图 ——————————
+\begin{figure}[H]
 \centering
 \begin{tikzpicture}
     \begin{axis}[
         width=12cm, height=10cm,
-        view={135}{30}, % 调整视角，让三个轴都清晰
+        view={120}{30}, % 调整视角：方位角120度，仰角30度
         axis lines=center,
+        zmin=0, zmax=1.2,
         xmin=0, xmax=1.2,
         ymin=0, ymax=1.2,
-        zmin=0, zmax=1.2,
+        xtick={1}, ytick={1}, ztick={1},
+        xticklabels={}, yticklabels={}, zticklabels={}, % 隐藏刻度数字
         xlabel={\textbf{X: 硬件工程化能力}},
         ylabel={\textbf{Y: 农艺生物学积淀}},
         zlabel={\textbf{Z: 数据互信与合规}},
-        xtick={0,1}, ytick={0,1}, ztick={0,1},
+        xlabel style={anchor=north east, font=\small},
+        ylabel style={anchor=north west, font=\small},
+        zlabel style={anchor=south, font=\small},
         grid=major,
-        grid style={dashed, gray!30},
-        legend style={at={(0.5,-0.1)}, anchor=north, legend columns=-1},
+        grid style={dashed, gray!30}
     ]
 
-    % —————— 1. 欧美方案（均衡型） ——————
-    % 定义三个截距点 (X, Y, Z)
-    % 欧美：硬件(0.5)中等，农艺(0.9)极高，互信(0.9)极高
+    % —————— 1. 绘制“中国方案”曲面 (高硬件，低农艺，低合规) ——————
+    % 坐标点：(X=1.0, Y=0.3, Z=0.3)
+    % 颜色：红色系，代表激进、敏捷
     \addplot3[
-        patch,
-        patch type=triangle,
-        opacity=0.3,
-        color=blue,
+        surf,
         shader=interp,
-        fill=blue!20
-    ] coordinates {
-        (0.5, 0, 0)   % X截距
-        (0, 0.9, 0)   % Y截距
-        (0, 0, 0.9)   % Z截距
+        fill opacity=0.6,
+        colormap={cncolors}{color=(red) color=(orange)},
+        domain=0:1,
+        y domain=0:1,
+        samples=2,
+    ]
+    coordinates {
+        (0,0,0) (1,0,0)
+        (0,0.3,0.3) (1,0.3,0.3)
     };
-    % 添加图例条目（透明）
-    \addlegendimage{area legend, blue!30, fill=blue!30}
-    \addlegendentry{欧美方案（生物/互信优势）}
-
-    % —————— 2. 中国方案（非对称型） ——————
-    % 中国：硬件(1.1)极强（降维打击），农艺(0.3)弱，互信(0.2)弱
-    \addplot3[
-        patch,
-        patch type=triangle,
-        opacity=0.7,
-        color=red,
-        shader=interp,
-        fill=red!60
-    ] coordinates {
-        (1.1, 0, 0)   % X截距（突出）
-        (0, 0.3, 0)   % Y截距（塌陷）
-        (0, 0, 0.2)   % Z截距（塌陷）
-    };
-    \addlegendimage{area legend, red!60, fill=red!60}
-    \addlegendentry{中国方案（工程极致，基底薄弱）}
     
-    % —————— 3. 辅助线与标注 ——————
-    % 标注中国方案的尖端
-    \node[red, anchor=west] at (axis cs:1.1, 0, 0) {极致性价比与敏捷性};
-    % 标注欧美方案的高点
-    \node[blue, anchor=south] at (axis cs:0, 0, 0.9) {地缘安全壁垒};
-    \node[blue, anchor=west] at (axis cs:0, 0.9, 0) {百年农艺数据};
+    % —————— 2. 绘制“欧美方案”曲面 (中硬件，高农艺，高合规) ——————
+    % 坐标点：(X=0.6, Y=1.0, Z=1.0)
+    % 颜色：蓝色系，代表沉稳、积淀
+    \addplot3[
+        surf,
+        shader=interp,
+        fill opacity=0.5,
+        colormap={uscolors}{color=(blue!80) color=(cyan)},
+        domain=0:1,
+        y domain=0:1,
+        samples=2,
+    ]
+    coordinates {
+        (0,0,0) (0.6,0,0)
+        (0,1,1) (0.6,1,1)
+    };
+
+    % —————— 3. 关键点标注 (Pin Labels) ——————
+    
+    % 标注中国优势点
+    \node[coordinate, pin={[pin edge={thick, red}, align=center, red]300:\textbf{中国优势区}\\极致性价比\\敏捷迭代}] 
+    at (axis cs:1.0, 0.1, 0.1) {};
+
+    % 标注欧美壁垒点
+    \node[coordinate, pin={[pin edge={thick, blue}, align=center, blue]90:\textbf{欧美壁垒区}\\百年农艺数据\\地缘合规}] 
+    at (axis cs:0.1, 1.0, 1.0) {};
+
+    % 标注中间竞争带
+    \node[coordinate, pin={[pin edge={dashed, black}, align=center, black]150:\textbf{激烈竞争带}}] 
+    at (axis cs:0.5, 0.5, 0.5) {};
 
     \end{axis}
 \end{tikzpicture}
-\caption{中国智慧农业国际竞争力三维能力流形图 (3D Capability Manifold)}
-\label{fig:3d_manifold}
+\caption{全球智慧农业竞争态势三维曲面图：硬件能力(X) vs 农艺积淀(Y) vs 合规壁垒(Z)}
+\label{fig:3d_competition}
 \end{figure}
 
-\textbf{图解分析：}
-\begin{itemize}
-    \item \textbf{红色曲面（中国）：} 向X轴极度延伸，代表在工程制造、算法迭代上的极致优势；但在Y轴（农艺）和Z轴（互信）呈现塌陷状，覆盖体积小，表明系统鲁棒性受限于基础学科与国际规则。
-    \item \textbf{蓝色曲面（欧美）：} 虽在X轴不及中国敏捷，但在YZ轴拥有深厚壁垒，形成了一个更均衡、抗风险能力更强的立体结构。
-\end{itemize}
 \section{结语：人文母题的工程回响}
 
 \subsection{规训自然的西西弗斯}
